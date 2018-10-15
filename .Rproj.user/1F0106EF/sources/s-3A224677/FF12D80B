@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1539617662244.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "FF12D80B",
+    "lastKnownWriteTime" : 0,
+    "last_content_update" : 1539617662244,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "contentUrl" : "content?title=R+data+sets&file=380e9b4658d242e5ae2f7bccd5dfe8d1",
+        "title" : "R data sets"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "urlcontent"
+}

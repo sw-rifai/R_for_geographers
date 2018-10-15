@@ -1,0 +1,60 @@
+R for geographers: a brief exposition
+=========================================================
+author: Sami Rifai 
+date: 2018-09-27
+autosize: true
+
+First Slide
+========================================================
+
+For more details on authoring R presentations please visit <https://support.rstudio.com/hc/en-us/articles/200486468>.
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+Tidyverse - an interoperable collection of packages
+========================================================
+Core packages:
+- dplyr
+
+- ggplot2
+
+- readr
+
+- tidyr
+
+***
+- purrr 
+
+- stringr 
+
+- forcats
+```{r}
+library(tidyverse)
+
+
+```
+
+Two-Column Slide
+====================================
+dplyr
+
+ggplot2
+
+tidyr
+***
+readr
+purrr 
+stringr 
+forcats
+
+Slide With Plot
+========================================================
+.reveal section del {
+  color: red;
+} 
+~~blah blah~~
+```{r, echo=T}
+plot(cars)
+```
