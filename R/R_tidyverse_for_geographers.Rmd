@@ -2,7 +2,10 @@
 title: "R Tidyverse Methods for SoGE Geographers"
 author: "Sami Rifai"
 date: "10/15/2018"
-output: html_document
+output:
+  pdf_document: 
+    latex_engine: xelatex
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -85,14 +88,15 @@ iris %>%
 
 
 # - sample random rows - 
-```{r}
+```{r cache=T}
 iris %>% 
   sample_n(10)
 ```
 
 
 # - Summarize groups with a statistic - 
-```{r}
+```{r }
+library(tidyverse)
 iris %>% # count number of observations per species
   group_by(Species) %>% 
   summarize(nobs = n()) %>% 
@@ -552,38 +556,3 @@ x[,1:100,1:100,1] %>% plot # plot spatial subset
 x[,1:10,1:10,c(1,2,3)] %>% plot
 ```
 
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```

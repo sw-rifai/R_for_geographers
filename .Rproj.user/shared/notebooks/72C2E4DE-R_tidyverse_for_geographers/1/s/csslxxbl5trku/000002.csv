@@ -1,0 +1,1 @@
+"0","read.table(""data/mei_1950_2018.data"",skip = 1, nrows = 68) # base R way"
