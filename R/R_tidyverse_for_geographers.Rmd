@@ -14,7 +14,10 @@ knitr::opts_knit$set(root.dir = normalizePath(".."))
 ```
 
 # **R for geographers**
-## An exposition of the Tidyverse
+## An exposition of the [Tidyverse](https://www.tidyverse.org/)
+
+<br>
+<br>
 
 ### Outline
 1. **dplyr** & **tibble**: for manipulating data
@@ -24,15 +27,22 @@ knitr::opts_knit$set(root.dir = normalizePath(".."))
 5. **ggplot2**: for visual exploration
 6. **sf & stars**: The next gen of geospatial methods for R & Tidyverse methods
 
+<br>
+<br>
 
-```{r cache=T}
-library(tidyverse); library(lubridate)
+## If you don't have the necessary libraries, run the following:
+```{r cache=T, eval=FALSE}
+install.packages(c("tidyverse","lubridate","sf","stars","raster"))
 ```
 
-#(1) Basic plumbing with **dplyr** 
+## If you don't have Rstudio installed and don't have time, try [RstudioCloud](https://rstudio.cloud/)
+
+# (Section: 1) Basic plumbing with **dplyr** 
 - This is a 'pipe' symbol: %>%
 - The keyboard shortcut in Rstudio is "ctrl+shift+m" 
 - pipes allow chaining operations to an object
+
+<br>
 
 ## non pipe way
 - this is the 'nested' way to do: generate a vector of random numbers, log it, and plot the distribution
@@ -40,6 +50,7 @@ library(tidyverse); library(lubridate)
 hist(log(rnorm(1000, mean = 100, sd=3)))
 ```
 
+<br>
 
 ## pipe way 
 - Here you can linearly read the chain of operations
@@ -50,47 +61,59 @@ rnorm(1000, mean=100, sd=3) %>% log() %>% hist()
 
 **So pipes allow us to arbitrarily long things without nesting or creating copyies of dataframes**
 
+<br>
+<br>
+
 ---------------------------------------------------------------------------
 
 ## Life before and after dplyr 
 - excellent tutorial: [https://suzan.rbind.io/categories/tutorial/]
 
+<br>
+<br>
 
 
 # - Tibbles vs dataframes - 
 ## tibbles are a more clever version of data frames that offer some features (?tibble) but also, are compatible for tidyverse methods
 ```{r cache=T}
-junk_df <- data.frame(x=rnorm(50, mean = 0, sd=10), 
-                   y=rnorm(50, mean=10, sd=1))
+junk_df <- data.frame(x=rnorm(20, mean = 0, sd=10), 
+                   y=rnorm(20, mean=10, sd=1))
 print(junk_df) # prints the whole df!
 
-junk_tb <- tibble(x=rnorm(50, mean = 0, sd=10), 
-                      y=rnorm(50, mean=10, sd=1))
+#*** NOW LET'S MAKE A BIG TIBBLE***#
+junk_tb <- tibble(x=rnorm(100, mean = 0, sd=10), 
+                      y=rnorm(100, mean=10, sd=1))
 print(junk_tb) # just prints the top 10 rows
 ```
 
+<br>
+<br>
 
-#**Filtering with dplyr**
-## filtering data before dplyr: 
+# **Filtering with dplyr**
+## Base R approach to filtering data: 
 ```{r cache=T}
 iris[iris[,'Species']=="setosa" & iris[,"Sepal.Length"] > 5.0,]
 ```
 
-# filtering with **dplyr**
+## Filtering with **dplyr**
 ```{r cache=T}
 iris %>% filter(Species=="setosa" & Sepal.Length > 5.0)
 ```
 
+<br>
 
-# - Creating or transforming variables - 
+# Creating or transforming variables
 ```{r cache=T}
-iris <- iris %>% 
+tmp <- iris %>% 
   mutate(p_wl_ratio = Petal.Width/Petal.Length) %>% 
   mutate(narrow = ifelse(p_wl_ratio < 0.25, TRUE, FALSE))
+
+tmp %>% head()
 ```
+<br>
 
 
-# - Renaming variables - 
+# Renaming variables 
 ```{r cache=T}
 iris %>% names()
 
@@ -98,16 +121,19 @@ iris %>%
   rename_all(tolower) %>% # rename cols with lowercase
   head() # shows the top rows
 ```
+<br>
 
 
-# - sample random rows - 
+# Sample random rows 
 ```{r cache=T}
 iris %>% 
   sample_n(10)
 ```
+<br>
+<br>
 
 
-#**Summarize groups with a statistic**
+# **Summarize groups with a statistic**
 ```{r cache=T, message=F, warning=F}
 library(tidyverse)
 iris %>% # count number of observations per species
@@ -115,7 +141,9 @@ iris %>% # count number of observations per species
   summarize(nobs = n()) %>% # count the number of observations
   ungroup() # always ungroup, not strictly necessary, but it will save you much pain in time
 ```
+<br>
 
+# Summarize many variables for a corresponding group
 ```{r cache=T, message=F, warning=F}
 library(tidyverse); 
 iris %>% # calc mean of traits per species
@@ -123,6 +151,7 @@ iris %>% # calc mean of traits per species
   summarise_all(mean) %>% # quick way to generate statistic for many columns
   ungroup()
 ```
+<br>
 
 ```{r cache=T, message=F, warning=F}
 iris %>% # calc mean of traits across three species
@@ -134,7 +163,14 @@ iris %>% # calc mean of traits across three species
   ungroup()
 ```
 
-# (3 & 4) **readr** & **tidyr** for getting data into a workable shape ----------------------------
+
+<br>
+<br>
+<br>
+
+# (Sections: 2 & 3) **readr** & **tidyr** for getting data into a workable shape 
+## The **readr** package imports data more quickly and with fewer errors.
+## It will also not import characters as factors. _unbelievably important_ 
 ```{r message=F, cache=T}
 library(tidyverse); library(lubridate); 
 
@@ -151,6 +187,43 @@ mei_long <- mei_wide %>% # reshape the data frame from 'wide' to 'long'
 mei_long %>% 
   ggplot(data=., aes(date, index))+geom_line()
 ```
+
+<br>
+
+# Import and summarize data from the EE format
+Zonal statistics from Earth Engine are typically exported from Earth Engine with a system:index column.
+This can be used to extract the date. Here we will import a time series from four Colombian cities
+from the "Climate Hazareds Infrared with Station data" product. The observations are recorded on the 
+pentad (5-days). We will aggregate to the month and plot the time series. 
+
+```{r cache=T, message=F, warning=F}
+library(tidyverse); 
+library(lubridate); 
+
+# rainfall data exported from Google Earth Engine
+tmp <- read_csv("data/CHIRPS_ColombiaCiudades_20000101_20180101.csv")
+
+tmp %>% glimpse()
+
+tmp %>% 
+  rename(precip=mean, city=name) %>% # rename column
+  mutate(date=parse_date_time(substr(`system:index`,1,8),'ymd')) %>% 
+  mutate(year=year(date),   # lubridate functions to extract year and month from POSIXct date object
+         month=month(date)) %>% 
+  group_by(year,month,city) %>% # what groups will we use to summarize the data?
+  summarize(precip_tot = sum(precip, na.rm=T)) %>% 
+  ungroup() %>% 
+  mutate(date = parse_date_time(paste(year,month,1),'ymd')) %>% # reassemble date
+  ggplot(data=., aes(date, precip_tot, color=city))+geom_line()+
+  labs(x="",y="Precipitation [mm]")
+
+
+```
+
+<br>
+<br>
+<br>
+
 
 # (5) **ggplot2** for data visulization
 # ggPlotting El Niño --------------------------------------------------------
@@ -180,6 +253,8 @@ tmp %>%
 
 ```
 
+<br>
+
 ## LETS 'smooth' the record with a moving average
 ```{r cache=T, message=F, warning=F}
 library(RcppRoll)
@@ -191,6 +266,8 @@ tmp %>%
   geom_line()+
   geom_line(aes(date, index_12mo),col='red',lwd=1.5)
 ```
+
+<br>
 
 ## LET's 'deseasonlize' the record by subtracting the monthly mean
 ```{r cache=T, message=F, warning=F}
@@ -207,6 +284,9 @@ tmp2 %>%
   geom_line()+
   geom_line(aes(date, index_ds), col='red') # so that actually didn't make much of a difference
 ```
+
+<br>
+<br>
 
 # ggplot spatial data: La Selva CARBONO plots data ---------------------------------------------
 ```{r cache=T, message=F,  warning=F}
@@ -232,6 +312,8 @@ carb %>% # better way
 
 ```
 
+<br>
+
 ```{r cache=T, message=F, warning=F}
 library(tidyverse); 
 carb %>% # visualize through time
@@ -255,18 +337,20 @@ carb %>% # visualize through time
 
 ```
 
+## Or visulize it with a movie using [gganimate](https://github.com/thomasp85/gganimate)
 ```{r cache=T, eval=F}
-# library(gganimate)
-# p <- carb %>% # visualize through time
-#   ggplot(data=., aes(X_m, Y_m, fill=log10(height_cm), frame=year))+
-#   geom_raster()+
-#   coord_equal()+
-#   scale_fill_viridis_c("Canopy Height [log cm]", option = 'B')+
-#   facet_wrap(~plot)+
-#   labs(title='Year: {frame_time}')
-# gganimate(p, "outputs/carbono_plot_heights.gif")
+library(gganimate)
+p <- carb %>% # visualize through time
+  ggplot(data=., aes(X_m, Y_m, fill=log10(height_cm), frame=year))+
+  geom_raster()+
+  coord_equal()+
+  scale_fill_viridis_c("Canopy Height [log cm]", option = 'B')+
+  facet_wrap(~plot)+
+  labs(title='Year: {frame_time}')
+gganimate(p, "outputs/carbono_plot_heights.gif")
 ```
-<!-- ![Behold the moving picture]("carbono_plot_heights.gif") -->
+
+<br>
 
 ## Plot distributions ------------------------------------------------------
 ```{r cache=T, eval=F}
@@ -288,6 +372,10 @@ carb %>%
   facet_wrap(~plot)
 
 ```
+
+<br>
+<br>
+
 ## Spatiotemporal example --------------------------------------------------
 ### Plotting monthly ozone concentrations
 ```{r cache=T, warning=F, message=F}
@@ -306,8 +394,11 @@ nasa %>%                         # spatiotemporal tbl_cube
 
 ```
 
+<br>
+
 ### Plot the mean monthly temperature
-```{r cache=T}
+```{r cache=T, warning=F, message=F}
+library(tidyverse)
 nasa %>% 
   as_tibble() %>% 
   group_by(lat,long, month) %>% 
@@ -347,6 +438,8 @@ nasa %>%
 
 ```
 
+<br>
+
 ## Seals -------------------------------------------------------------------
 ```{r cache=T, message=F, warning=F}
 library(tidyverse)
@@ -365,7 +458,9 @@ seals %>%
   theme_dark()
 ```
 
-## Plotting hurrican tracks ------------------------------------------------------------------
+<br>
+
+## Plotting hurricane tracks ------------------------------------------------------------------
 ```{r dplyr::storms, cache=T}
 library(tidyverse)
 dplyr::storms
@@ -376,11 +471,11 @@ storms %>%
   ggplot(data=., aes(long,lat,size=category))+
   geom_point()+
   # borders("world")+
-  scale_x_continuous(limits=c(-120,0))+
-  scale_y_continuous(limits = c(-10,55))+
-  borders('world', fill = "brown")
+  # scale_x_continuous(limits=c(-120,0))+
+  # scale_y_continuous(limits = c(-10,55))+
+  borders('world', fill = "darkgreen")
 
-# bad!
+# still bad!
 storms %>% 
   arrange(wind) %>% 
   ggplot(data=., aes(long,lat,size=category,color=wind))+
@@ -390,12 +485,45 @@ storms %>%
   scale_x_continuous(limits=c(-130,0))+
   scale_y_continuous(limits = c(-10,55))
 
+
+```
+
+## A better way, but it's a bit tricky
+```{r cache=T, message=F, warning=F}
+
+library(sf); library(fasterize);
+dplyr::storms
+x <- map('world', plot=F, fill=T) %>% st_as_sf()
+blank_slate <- raster::raster(x, res=1)
+r <- fasterize::fasterize(x, blank_slate)
+rat_world <- r %>% raster::as.data.frame(., xy=T) %>% 
+  rename(long=x, lat=y) %>% as_tibble()
+
+ss_rat_world <- rat_world %>% 
+  filter(lat > -15 & lat < 60 & long > -150 & long < 0)
+
+ss_rat_world %>% 
+  filter(is.na(layer)==F) %>% 
+  ggplot(data=., aes(long,lat))+geom_raster()+
+  geom_point(data=storms, aes(x=long,y=lat,color=wind,size=category),alpha=0.25)+
+  scale_color_viridis_c("B", begin=0.2)+
+  coord_equal()+
+  theme_bw()
+
+```
+
+## Time series of hurricanes
+```{r cache=T, message=F, warning=F}
+library(tidyverse); library(lubridate)
+dplyr::storms
 storms %>% group_by(year) %>% summarize(nobs=n()) %>% ggplot(data=., aes(year,nobs))+geom_line()
 
 
-storms %>% group_by(month) %>% summarize(wind_25=quantile(wind,0.025), 
-                                         wind_50=median(wind), 
-                                         wind_75=quantile(wind, 0.95)) %>% 
+storms %>% 
+  group_by(month) %>% 
+  summarize(wind_25=quantile(wind,0.025), 
+            wind_50=median(wind), 
+           wind_75=quantile(wind, 0.95)) %>% 
   ungroup() %>% 
   ggplot(data=., aes(month, wind_50))+
   geom_ribbon(aes(x=month, ymax=wind_75, ymin=wind_25),lty=0,alpha=0.25)+
@@ -425,6 +553,10 @@ storms %>%
 
 ```
 
+
+<br>
+<br>
+
 ## PCA example with columns scaling -------------------------------------------------------------
 ```{r message=FALSE, warning=FALSE, cache=F, paged.print=TRUE}
 library(tidyverse); 
@@ -442,6 +574,10 @@ iris %>%
   biplot(main='Good')                       # plot biplot
 
 ```
+
+<br>
+<br>
+<br>
 
 # Super advanced dplyr ----------------------------------------------------
 ## inspired by: [Suzan Baert](https://twitter.com/SuzanBaert) and modified from her github [repo]( https://github.com/suzanbaert/RLadies_RoCur/blob/master/Dplyr_tricks.pdf) tutorial on advanced dplyr
@@ -483,15 +619,19 @@ starwars %>%
 ```
 
 
-
+<br>
+<br>
+<br>
 
 
 # (6) SPATIAL METHODS + TIDYVERSE ---------------------------------------------
+### The sp library is commonly used for spatial vector data, although it is not very compatible with tidyverse methods
+### The developing 'simple features' (sf) library aims to be a tidyverse compliant sp alternative
 ```{r cache=T}
 # Required libraries: 
-library(sf); 
 library(tidyverse); 
 library(lubridate); 
+library(sf); 
 
 dir.create("data/SouthAmerica")
 unzip(zipfile = "data/SouthAmerica.zip", exdir = "data/SouthAmerica")
@@ -502,11 +642,13 @@ SA <- sf::st_read("data/SouthAmerica/SouthAmerica.shp")
 plot(SA) # blah, not ideal
 plot(SA["SQKM"]) # base R method - a little better, but not so easy to control
 
-ggplot() + geom_sf(data=SA, aes(fill=SQKM))+
+# Way better with ggplot
+ggplot() + 
+  geom_sf(data=SA, aes(fill=SQKM))+
   scale_fill_viridis_c()
 
 ggplot() + geom_sf(data=SA, aes(fill=log(SQKM, base = 10)))+
-  scale_fill_viridis_c()
+  scale_fill_viridis_c("Area [log10(km2)]")
 
 # SA %>% mutate(population=ifelse(POP2007>0, POP2007,1)) %>% 
 #   select(population) %>% pull(population)
@@ -525,6 +667,45 @@ ggplot() + geom_sf(data=SA, aes(fill=log(SQKM, base = 10)))+
 
 
 ```
+
+<br>
+<br>
+
+## Joining multiple data sources with spatial features
+```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE, cache=T}
+# get lifeExp from gapminder
+dat <- gapminder::gapminder
+dat$year %>% summary
+pop2000s <- dat %>% 
+  filter(year>=2000) %>% 
+  group_by(country) %>% 
+  summarize(le=mean(lifeExp, na.rm=T))
+
+library(maps)
+world = st_as_sf(map('world', plot = FALSE, fill = TRUE))
+laea = st_crs("+proj=laea +lat_0=30 +lon_0=-95") # Lambert equal area
+new_world <- st_transform(world, laea) # spatial transform of projection
+g = st_graticule(world) # the lines on a map
+plot(st_geometry(g), axes = TRUE)
+
+plot(world, graticule = TRUE, key.pos = NULL, axes = TRUE)
+
+# are the countries in the gapminder data in the world map?
+(unique(dat$country) %in% world$ID) %>% table()
+
+# join the gapminder data with the spatial data
+tmp2 <- left_join(world, 
+                  pop2000s %>% rename(ID=country), # needed to match by 'ID' 
+                  by="ID") 
+
+ggplot()+                           # initiate ggplot
+  geom_sf(data=tmp2, aes(fill=le))+ # add spatial data 
+  scale_fill_viridis_c("Life Expectancy [yrs]", option="B")+  # use the inferno color palette
+  labs(x="Longitude",y="Latitude", title = "Life Expectancy - 2000s", subtitle = "source: gapminder")
+```
+
+<br>
+<br>
 
 ## Plotting raster data with **ggplot2**
 This works for visualizing single bands of smallish rasters (< 1000x1000) 
@@ -555,12 +736,16 @@ l7 %>%
 
 ```
 
+<br>
+<br>
+<br>
+
 # A peak into stars! ------------------------------------------------------------------
 # stars is developing package for dealing with spatial raster and vector data
 # It's tidyverse compliant, and is/will be much better suited for processing large spatial data in R
-#[https://www.r-spatial.org/r/2018/03/22/stars2.html]
+# [stars library](https://r-spatial.github.io/stars/)
 
-#! CAUTIONARY NOTE ! if you are processing Gbs worth of raster or other spatiotemporal data, consider doing it in Python
+# **CAUTIONARY NOTE!** _If_ you are processing Gbs worth of raster or other spatiotemporal data, consider doing it in Python.
 ```{r cache=T}
 library(stars)
 tif = system.file("tif/L7_ETMs.tif", package = "stars")
