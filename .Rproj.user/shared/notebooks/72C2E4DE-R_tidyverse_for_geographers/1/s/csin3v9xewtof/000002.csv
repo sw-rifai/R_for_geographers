@@ -1,2 +1,0 @@
-"0","#  vector object            -> function -> function"
-"0","rnorm(1000, mean=100, sd=3) %>% log() %>% hist()"

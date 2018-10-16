@@ -1,7 +1,0 @@
-"0",""
-"0","# plot recent ENSO record"
-"0","tmp %>%"
-"0","  filter(year>=1990) %>% "
-"0","  ggplot(data=., aes(date, index))+"
-"0","  geom_line()"
-"0",""

@@ -1,4 +1,0 @@
-"0",""
-"0","junk_tb <- tibble(x=rnorm(50, mean = 0, sd=10), "
-"0","                      y=rnorm(50, mean=10, sd=1))"
-"0","print(junk_tb) # just prints the top 10 rows"

@@ -1,4 +1,0 @@
-"0","iris %>% # count number of observations per species"
-"0","  group_by(Species) %>% "
-"0","  summarize(nobs = n()) %>% "
-"0","  ungroup()"

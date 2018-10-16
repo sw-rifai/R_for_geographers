@@ -1,3 +1,0 @@
-"0","iris %>% # calc mean of traits per species"
-"0","  group_by(Species) %>% "
-"0","  summarise_all(mean)"

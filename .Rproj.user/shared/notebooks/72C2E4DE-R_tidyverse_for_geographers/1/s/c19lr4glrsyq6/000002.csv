@@ -1,3 +1,0 @@
-"0","iris <- iris %>% "
-"0","  mutate(p_wl_ratio = Petal.Width/Petal.Length) %>% "
-"0","  mutate(narrow = ifelse(p_wl_ratio < 0.25, TRUE, FALSE))"
